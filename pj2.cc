@@ -30,7 +30,7 @@ int  main(void)
     mol.read_mw_hessian("hessian.dat");
     Eigen::SelfAdjointEigenSolver<Matrix> solver(mol.H);
     Matrix lambda = solver.eigenvalues();
-    const double con = 5140.485;
+    const double con = sqrt(E_h / M_e / A_0 / A_0) / 200 / PI / C_0;  //与测试样例不一致。
     for(int i = mol.natom * 3 - 1; i >= 0; i--)
     {
         if(lambda(i) < 0)

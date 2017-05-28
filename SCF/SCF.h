@@ -8,14 +8,25 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, 1> Vector;
 
 using namespace std;
 
-//read the nuclear repulsion energy.
-double fr_Enuc(const char *filename);
+class Basis
+{
+    public:
+        Matrix S, T, V, H, Sx;
+        Matrix Fx, Eps, Cx, C, D;
+        int max, occ;
+        double Enuc, *tei, Etot, Eele;
 
-//read the overlap integrals.
-//read the one-electron kinetic energy integrals.
-//read the one-electron nuclear attraction integrals.
+        void set_fx(int i);
+        void set_eps(int i);
+        void set_d(int i);
 
+        Basis(const char *enuc, const char *s, const char *t, const char *v, const char *eri);
+        ~Basis();
 
+        
+};
+
+Matrix fr_basis(const char *filename);
 
 
 

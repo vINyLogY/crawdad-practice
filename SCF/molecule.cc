@@ -153,17 +153,17 @@ Molecule::Molecule(const char *filename)
     // open filename
     FILE *fmol = fopen(filename, "r");
 
-    // read the number of atoms and the charge from filename
-    fscanf(fmol, "%d %d", &natom, &charge);
+    // read the number of atoms from filename
+    fscanf(fmol, "%d", &natom);
 
     // allocate space
     zvals = new int[natom];
     geom = new double* [natom];
     for(int i = 0; i < natom; i++)
+    {
         geom[i] = new double[DIM];
-
-    for(int i=0; i < natom; i++)
         fscanf(fmol, "%d %lf %lf %lf", zvals + i, geom[i] ,geom[i] + 1 ,geom[i] + 2);
+    }
 
     fclose(fmol);
 }
