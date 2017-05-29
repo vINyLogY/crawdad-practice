@@ -7,6 +7,8 @@
         "fft": "cpp",
         "algorithm": "cpp",
         "memory": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "iterator": "cpp",
+        "iostream": "cpp"
     }
 }
