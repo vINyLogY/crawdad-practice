@@ -3,7 +3,7 @@
 
 #include "Eigen/Dense"
 
-#define INDEX(i, j) ((i > j) ? ((i*(i+1)/2)+j) : (j*(j+1)/2+i))
+#define INDEX(i, j) ((i > j) ? (((i)*(i+1)/2)+j) : ((j)*(j+1)/2+i))
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix;
 typedef Eigen::Matrix<double, Eigen::Dynamic, 1> Vector;
@@ -29,10 +29,11 @@ class Basis
 
         void iteration(int oao, double err);
 
-        Basis(const char *enuc, const char *s, const char *t, const char *v, const char *eri);
-        ~Basis();
+        Matrix MOF();
+        double Mu(const char *mu);
 
-        
+        Basis(const char *enuc, const char *s, const char *t, const char *v, const char *eri);
+        ~Basis();   
 };
 
 Matrix fr_basis(const char *filename);

@@ -31,9 +31,14 @@ class Molecule
         double angle_op(int atom1, int atom2, int atom3, int atom4);
         double torsion(int atom1, int atom2, int atom3, int atom4);
         double com(int i);
+        double coq(int i);
 
         //Project 2
-        void read_mw_hessian(const char *filename);        
+        void read_mw_hessian(const char *filename);    
+
+        //Project 3
+        int occ();
+    
 
         Molecule(const char *filename);
         ~Molecule();

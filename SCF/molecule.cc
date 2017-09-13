@@ -122,6 +122,14 @@ double Molecule::com(int i)
     return ans;
 }
 
+double Molecule::coq(int i)
+{
+    double ans = 0.0;
+    for(int l = 0; l < natom; l++)
+        ans += zvals[l] * geom[l][i];
+    return ans;
+}
+
 //Project 2
 void Molecule::read_mw_hessian(const char *filename)
 {
@@ -142,6 +150,18 @@ void Molecule::read_mw_hessian(const char *filename)
     fclose(fhessian);
 
     return;
+}
+
+//Project 3
+int Molecule::occ()
+{
+    int occ = 0;
+
+    for(int i = 0; i < natom; i++)
+        occ += zvals[i];
+    occ /= 2;
+
+    return occ;
 }
 
 

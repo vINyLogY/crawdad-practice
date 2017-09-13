@@ -4,11 +4,11 @@
 
 #include "atomdata.h"
 #include "SCF.h"
-//#include "Molecule.h"
+#include "Molecule.h"
 
 #include "Eigen/Dense"
 
-//#define DEBUG
+#define DEBUG
 
 using namespace std;
 
@@ -22,11 +22,24 @@ int main(void)
         freopen("output.txt", "w", stdout);
     #endif
 
-//    Molecule mol("geom.dat");
+    Molecule mol("geom.dat");
 
-    Basis basis("enuc.dat", "s.dat", "t.dat", "v.dat", "eri.dat"); 
+    Basis basis("enuc.dat", "s.dat", "t.dat", "v.dat", "eri.dat");
 
-    basis.iteration(5, 1e-5);
+    basis.iteration(mol.occ(), 1e-10);
+
+    cout << basis.MOF().diagonal() << endl;
+
+    mol.translate(0.0 - mol.com(0), 0.0 - mol.com(1), 0.0 - mol.com(2));
+
+    cout << basis.Mu("mux.dat") - mol.coq(0) << endl;
+    cout << basis.Mu("muy.dat") - mol.coq(1) << endl;
+    cout << basis.Mu("muz.dat") - mol.coq(2) << endl;
+
+    cout<< basis.S << endl;
+
+    //qA
+
 
     return 0;
 }
@@ -76,26 +89,6 @@ Basis::~Basis()
     delete[] tei;
 }
 
-Matrix fr_basis(const char *filename)
-{
-    Matrix ans;
-    double temp;
-    int i, j, max;
-    FILE *f = fopen(filename, "r");
-    while(fscanf(f, "%d %d %lf", &i, &j, &temp) != EOF);
-    max = i;
-    rewind(f);
-    ans.resize(max, max);
-    while(fscanf(f, "%d %d %lf", &i, &j, &temp) != EOF)
-    {
-        ans(i - 1, j - 1) = temp;
-    }
-    for(int _i = 0; _i < max - 1; _i++)
-        for(int _j = _i + 1; _j < max; _j++)
-            ans(_i, _j) = ans(_j, _i);
-    return ans;
-}
-
 void Basis::set_fx()
 {
     if(iter == 0) F = H;
@@ -105,7 +98,6 @@ void Basis::set_fx()
         F = H;
         for(int i=0; i < max; i++)
             for(int j=0; j < max; j++)
-            {
                 for(int k=0; k < max; k++)
                     for(int l=0; l < max; l++)
                     {
@@ -115,9 +107,8 @@ void Basis::set_fx()
                         ik = INDEX(i, k);
                         jl = INDEX(j, l);
                         ikjl = INDEX(ik, jl);
-                        F(i, j) += D(k, l) * (2.0 * tei[ijkl] - tei[ikjl]);
+                        F(i, j) += 0.5 * D(k, l) * (2.0 * tei[ijkl] - tei[ikjl]);
                      }
-            }
     }
     Fx = Sx.adjoint() * F * Sx;
 
@@ -154,16 +145,14 @@ void Basis::set_d()
         {
             temp = 0.0;
             for(int m = 0; m < occ; m++)
-            temp += C(i,m) * C(j,m); 
+                temp += 2.0 * C(i,m) * C(j,m); 
             D(i,j) = temp;
         }
     Eele = 0.0;
-    for(int i=0; i < max; i++)
-        for(int j=0; j < max; j++)
-        {
-            Eele += D(i, j) * (H(i, j) + F(i, j));
-        }
-    Etot = Eele + Etot;
+    for(int i = 0; i < max; i++)
+        for(int j = 0; j < max; j++)
+            Eele +=  0.5 * D(i, j) * (F(i, j) + H(i, j));
+    Etot = Eele + Enuc;
     return;
 }
 
@@ -206,4 +195,48 @@ void Basis::iteration(int oao, double err)
     return;
 }
 
+Matrix Basis::MOF()
+{
+    Matrix ans;
+    ans.resize(max, max);
+    for(int i = 0; i < max; i++)
+        for(int j = 0; j < max; j++)
+        {   
+            ans(i, j) = 0.0;
+            for(int mu = 0; mu < max; mu++)
+                for(int nu = 0; nu < max; nu++)
+                    ans(i, j) += 0.5 * C(mu, j) * C(nu, i) * F(mu, nu);
+        }
+    return ans;
+}
+
+double Basis::Mu(const char *filename)
+{
+    Matrix U = fr_basis(filename);
+    double ans = 0.0;
+    for(int i=0; i<max; i++)
+        for(int j=0; j<max; j++)
+            ans += D(i,j) * U(i, j);
+    return ans;
+}
+
+Matrix fr_basis(const char *filename)
+{
+    Matrix ans;
+    double temp;
+    int i, j, max;
+    FILE *f = fopen(filename, "r");
+    while(fscanf(f, "%d %d %lf", &i, &j, &temp) != EOF);
+    max = i;
+    rewind(f);
+    ans.resize(max, max);
+    while(fscanf(f, "%d %d %lf", &i, &j, &temp) != EOF)
+    {
+        ans(i - 1, j - 1) = temp;
+    }
+    for(int _i = 0; _i < max - 1; _i++)
+        for(int _j = _i + 1; _j < max; _j++)
+            ans(_i, _j) = ans(_j, _i);
+    return ans;
+}
 
